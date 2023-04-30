@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.EmployeeRepository">
+	<select id="getAll" resultMap="result">
+        SELECT * FROM employee
+    </select>
+
+	<insert id="createEmployee">
+    INSERT INTO employee (
+			name
+			,username
+			,password
+    		,age
+    		,email)
+	VALUES	(
+			#{name}
+			,#{username}
+			,#{password}
+			,#{age}
+			,#{email})
+    </insert>
+    
+    <select id="getEmployeeByUsername" resultMap="result">
+        SELECT * FROM employee WHERE username=#{username}
+    </select>
+    
+      <select id="getEmployeeById" resultMap="result">
+        SELECT * FROM employee WHERE emp_id=#{id}
+    </select>
+    
+     <select id="getEmployeeByListInt" resultMap="result">
+        SELECT * FROM employee WHERE emp_id IN <foreach  collection="listInt" item="value"  open="("  separator=" , "  close=")">
+        #{value}
+    </foreach>
+    </select>
+
+	<resultMap id="result" type="Employee">
+		<result property="id" column="emp_id" />
+		<result property="age" column="age" />
+		<result property="email" column="email" />
+		<result property="password" column="password" />
+		<result property="name" column="name" />
+		<result property="username" column="username" />
+	</resultMap>
+</mapper>
