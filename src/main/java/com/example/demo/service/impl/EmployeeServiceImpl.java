@@ -6,10 +6,6 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.demo.model.Employee;
@@ -21,8 +17,7 @@ import com.example.demo.response.CreateEmployeeResponse;
 import com.example.demo.response.EmployeeGetAllResponse;
 import com.example.demo.response.GetEmployeeByListIntResponse;
 import com.example.demo.response.LoginResponse;
-import com.example.demo.security.CustomUserDetails;
-import com.example.demo.security.JwtTokenProvider;
+import com.example.demo.security.JwtProvider;
 import com.example.demo.service.EmployeeService;
 
 @Service
@@ -35,10 +30,7 @@ public class EmployeeServiceImpl implements EmployeeService {
   PasswordEncoder encoder;
 
   @Autowired
-  AuthenticationManager authenticationManager;
-
-  @Autowired
-  private JwtTokenProvider tokenProvider;
+  private JwtProvider jwtProvider;
 
   @Override
   public ResponseEntity<EmployeeGetAllResponse> getALl() {
@@ -60,16 +52,28 @@ public class EmployeeServiceImpl implements EmployeeService {
 
   @Override
   public ResponseEntity<LoginResponse> Login(@Valid LoginRequest loginRequest) {
-    Authentication authentication =
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-            loginRequest.getUsername(), loginRequest.getPassword()));
-
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = tokenProvider.generateJwtToken((CustomUserDetails) authentication.getPrincipal());
-    Optional<Employee> emp = employeeRepository.getEmployeeByUsername(loginRequest.getUsername());
-    LoginResponse response = LoginResponse.builder().status("200").massage("Login successful")
-        .username(emp.get().getUsername()).token(jwt).build();
-    return new ResponseEntity<LoginResponse>(response, HttpStatus.OK);
+    Optional<Employee> userDetails =
+        employeeRepository.getEmployeeByUsername(loginRequest.getUsername());
+    if (encoder.matches(loginRequest.getPassword(), userDetails.get().getPassword())) {
+      // Generate token
+      String jwt = jwtProvider.generateToken(loginRequest.getUsername());
+      LoginResponse response = LoginResponse.builder().status("200").massage("Login successful")
+          .username(userDetails.get().getUsername()).token(jwt).build();
+      return new ResponseEntity<LoginResponse>(response, HttpStatus.OK);
+    }
+    return new ResponseEntity<LoginResponse>(HttpStatus.NO_CONTENT);
+    // Authentication authentication =
+    // authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+    // loginRequest.getUsername(), loginRequest.getPassword()));
+    //
+    // SecurityContextHolder.getContext().setAuthentication(authentication);
+    // String jwt = tokenProvider.generateJwtToken((CustomUserDetails)
+    // authentication.getPrincipal());
+    // Optional<Employee> emp =
+    // employeeRepository.getEmployeeByUsername(loginRequest.getUsername());
+    // LoginResponse response = LoginResponse.builder().status("200").massage("Login successful")
+    // .username(emp.get().getUsername()).token(jwt).build();
+    // return new ResponseEntity<LoginResponse>(response, HttpStatus.OK);
   }
 
   @Override

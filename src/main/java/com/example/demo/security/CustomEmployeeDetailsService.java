@@ -9,18 +9,20 @@ import org.springframework.stereotype.Service;
 import com.example.demo.model.Employee;
 import com.example.demo.repository.EmployeeRepository;
 
-@Service
-public class UserService implements UserDetailsService {
+@Service("customEmployeeDetailsService")
+public class CustomEmployeeDetailsService implements UserDetailsService {
 
   @Autowired
   private EmployeeRepository employeeRepository;
 
   @Override
-  public UserDetails loadUserByUsername(String username) {
-    Optional<Employee> iml = employeeRepository.getEmployeeByUsername(username);
-    if (iml.isEmpty()) {
-      throw new UsernameNotFoundException(username);
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    Optional<Employee> eml = employeeRepository.getEmployeeByUsername(username);
+    if (eml.isEmpty() || !eml.get().getUsername().equals(username)) {
+      throw new UsernameNotFoundException("No user present with username: " + username);
+    } else {
+
+      return new CustomEmployeeDetails(eml.get());
     }
-    return new CustomUserDetails(iml.get());
   }
 }

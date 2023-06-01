@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<typeAliases>
+		<typeAlias alias="Employee" type="com.example.demo.model.Employee" />
+		<typeAlias alias="SingupRequest" type="com.example.demo.request.SingupRequest" />
+		<typeAlias alias="IntegerRequest" type="com.example.demo.request.IntegerRequest" />
+	</typeAliases>
+
+	<mappers>
+		<mapper resource="Mapper/EmployeeRepository.xml" />
+	</mappers>
+
+</configuration>
